@@ -1,5 +1,6 @@
 package com.example.zsiri.the_thief_android_app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -99,8 +100,18 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_connection) {
-            // do sg
+        if (id == R.id.nav_start) {
+
+            Intent service = new Intent(MainActivity.this, ForegroundLocationReporter.class);
+            if (!ForegroundLocationReporter.IS_SERVICE_RUNNING) {
+                service.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
+                ForegroundLocationReporter.IS_SERVICE_RUNNING = true;
+                ForegroundLocationReporter.ACTIVITY = this;
+            } else {
+                service.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
+                ForegroundLocationReporter.IS_SERVICE_RUNNING = false;
+            }
+            startService(service);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -121,16 +132,5 @@ public class MainActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         server.setMap(mMap);
-
-
-
-
     }
-
-
-
-
-
-
-
 }

@@ -1,6 +1,8 @@
 package com.example.zsiri.the_thief_android_app;
 
 import android.app.Activity;
+import android.location.Location;
+import android.util.Log;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
@@ -21,7 +23,7 @@ import java.net.URISyntaxException;
  */
 
 public class ServerCommunication {
-
+    private static final String LOG_TAG = "ServerCommunication";
     public static final int DEFAULT_CAMERA_ZOOM = 14;
     private static ServerCommunication __instance;
     private Activity activity;
@@ -67,7 +69,7 @@ public class ServerCommunication {
 
     private void iterateOnJsonArray(JSONObject data, String part) throws JSONException {
         JSONArray people = data.getJSONArray(part);
-        System.out.println(part);
+        Log.i(LOG_TAG, part);
         for (int i = 0; i < people.length(); i++) {
             getAndMarkFromJsonObject(people, i, part.equals("thiefs"));
         }
@@ -76,7 +78,7 @@ public class ServerCommunication {
     private void getAndMarkFromJsonObject(JSONArray people, int i, boolean isThief) throws JSONException {
         JSONObject personObject = people.getJSONObject(i);
         LocationEntry person = LocationEntry.fromJSONObject(personObject);
-        System.out.println(person.toString());
+        Log.i(LOG_TAG, person.toString());
 
         if(map != null){
             map.addMarker(new MarkerOptions()
@@ -103,5 +105,15 @@ public class ServerCommunication {
 
     public void setActivity(Activity activity) {
         this.activity = activity;
+    }
+
+    public void sendLocation(Location location, String displayCharacter, String who) {
+        LocationEntry le = LocationEntry.fromLocation(location);
+        le.setIdentity(displayCharacter, who);
+        try {
+            socket.emit("check", le.toJsonObject());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
