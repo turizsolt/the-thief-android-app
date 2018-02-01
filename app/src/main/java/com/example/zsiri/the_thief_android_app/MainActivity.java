@@ -61,6 +61,9 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        MenuItem item = navigationView.getMenu().findItem(R.id.nav_toggle);
+        item.setTitle((ForegroundLocationReporter.IS_SERVICE_RUNNING?"STOP":"Start")+" tracking");
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
