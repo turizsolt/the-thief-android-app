@@ -69,7 +69,7 @@ public class ServerCommunication {
 
     private void iterateOnJsonArray(JSONObject data, String part) throws JSONException {
         JSONArray people = data.getJSONArray(part);
-        Log.i(LOG_TAG, part);
+        Log.v(LOG_TAG, part);
         for (int i = 0; i < people.length(); i++) {
             getAndMarkFromJsonObject(people, i, part.equals("thiefs"));
         }
@@ -78,7 +78,7 @@ public class ServerCommunication {
     private void getAndMarkFromJsonObject(JSONArray people, int i, boolean isThief) throws JSONException {
         JSONObject personObject = people.getJSONObject(i);
         LocationEntry person = LocationEntry.fromJSONObject(personObject);
-        Log.i(LOG_TAG, person.toString());
+        Log.v(LOG_TAG, person.toString());
 
         if(map != null){
             map.addMarker(new MarkerOptions()
