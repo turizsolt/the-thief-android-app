@@ -2,6 +2,8 @@ package com.example.zsiri.the_thief_android_app;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -121,7 +123,7 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(final MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -134,16 +136,44 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_toggle) {
 
-            Intent service = new Intent(MainActivity.this, ForegroundLocationReporter.class);
+            final Intent service = new Intent(MainActivity.this, ForegroundLocationReporter.class);
             if (!ForegroundLocationReporter.IS_SERVICE_RUNNING) {
+                //MenuItem i = (MenuItem) findViewById(R.id.nav_toggle);
+                item.setTitle("STOP tracking");
+
                 service.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
                 ForegroundLocationReporter.IS_SERVICE_RUNNING = true;
                 ForegroundLocationReporter.ACTIVITY = this;
+                startService(service);
             } else {
-                service.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
-                ForegroundLocationReporter.IS_SERVICE_RUNNING = false;
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                //MenuItem i = (MenuItem) findViewById(R.id.nav_toggle);
+                                item.setTitle("Start tracking");
+
+                                service.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
+                                ForegroundLocationReporter.IS_SERVICE_RUNNING = false;
+                                startService(service);
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                break;
+                        }
+                    }
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("Are you sure to stop tracking?\n(You should not stop during a game.)").setPositiveButton("STOP IT", dialogClickListener)
+                        .setNegativeButton("Cancel", dialogClickListener).show();
+
+
+
             }
-            startService(service);
+
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
