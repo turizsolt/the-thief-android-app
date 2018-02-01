@@ -38,6 +38,8 @@ public class ServerCommunication {
     private String name = "";
     private String serverAddress;
 
+    private boolean started = false;
+
     public static ServerCommunication getInstance() {
         if(ServerCommunication.__instance == null){
             ServerCommunication.__instance = new ServerCommunication();
@@ -163,5 +165,26 @@ public class ServerCommunication {
     public String getServerAddress() {
         if(serverAddress != null) return serverAddress;
         return DEFAULT_SERVER_ADDRESS;
+    }
+
+    public void sendStart() {
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put("thief", this.name);
+
+            socket.emit("start", obj);
+            started = true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendStop() {
+        socket.emit("stop");
+        started = false;
+    }
+
+    public boolean isStarted() {
+        return started;
     }
 }

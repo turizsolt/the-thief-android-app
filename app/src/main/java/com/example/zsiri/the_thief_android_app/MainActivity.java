@@ -61,9 +61,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        MenuItem item = navigationView.getMenu().findItem(R.id.nav_toggle);
-        item.setTitle((ForegroundLocationReporter.IS_SERVICE_RUNNING?"STOP":"Start")+" tracking");
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -78,6 +75,13 @@ public class MainActivity extends AppCompatActivity
 
         server.setName(name);
         server.setServerAddress(serverAddress);
+
+        MenuItem itemToggle = navigationView.getMenu().findItem(R.id.nav_toggle);
+        itemToggle.setTitle((ForegroundLocationReporter.IS_SERVICE_RUNNING?"STOP":"Start")+" tracking");
+
+        MenuItem itemStart = navigationView.getMenu().findItem(R.id.nav_start);
+        itemStart.setTitle((server.isStarted()?"STOP":"Start")+" game");
+
 
 
     }
@@ -177,6 +181,33 @@ public class MainActivity extends AppCompatActivity
 
             }
 
+        }  else if (id == R.id.nav_start) {
+            if(!server.isStarted()) {
+                item.setTitle("STOP game");
+                server.sendStart();
+            } else {
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                item.setTitle("Start game");
+
+                                server.sendStop();
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                break;
+                        }
+                    }
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("Are you sure to stop the game?\n(You should not stop during a game.)").setPositiveButton("STOP IT", dialogClickListener)
+                        .setNegativeButton("Cancel", dialogClickListener).show();
+
+            }
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
