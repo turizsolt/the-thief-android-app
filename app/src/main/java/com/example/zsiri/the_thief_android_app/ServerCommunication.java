@@ -18,6 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
+import java.text.ParseException;
 
 /**
  * Created by zsiri on 2018.01.31..
@@ -62,6 +63,8 @@ public class ServerCommunication {
                 iterateOnJsonArray(data, "thiefs");
             } catch (JSONException e) {
                 return;
+            } catch (ParseException e) {
+                return;
             }
             }
         });
@@ -79,7 +82,7 @@ public class ServerCommunication {
         }
     };
 
-    private void iterateOnJsonArray(JSONObject data, String part) throws JSONException {
+    private void iterateOnJsonArray(JSONObject data, String part) throws JSONException, ParseException {
         JSONArray people = data.getJSONArray(part);
         Log.v(LOG_TAG, part);
         for (int i = 0; i < people.length(); i++) {
@@ -87,7 +90,7 @@ public class ServerCommunication {
         }
     }
 
-    private void getAndMarkFromJsonObject(JSONArray people, int i, boolean isThief) throws JSONException {
+    private void getAndMarkFromJsonObject(JSONArray people, int i, boolean isThief) throws JSONException, ParseException {
         JSONObject personObject = people.getJSONObject(i);
         LocationEntry person = LocationEntry.fromJSONObject(personObject);
         Log.v(LOG_TAG, person.toString());
@@ -98,9 +101,10 @@ public class ServerCommunication {
                 .title(person.getDisplayName())
                 .icon(BitmapDescriptorFactory
                     .defaultMarker(
-                        isThief
-                        ? BitmapDescriptorFactory.HUE_RED
-                        : BitmapDescriptorFactory.HUE_BLUE))
+                        ( isThief
+                            ? BitmapDescriptorFactory.HUE_RED
+                            : BitmapDescriptorFactory.HUE_BLUE)))
+                    .alpha(person.isFreshDate()?1f:0.3f)
             );
 
             if(!mapPositioned) {

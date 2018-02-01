@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.LatLng;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -14,6 +15,7 @@ import java.util.Date;
  */
 
 public class LocationEntry {
+    public static final int TIMEOUT_FRESH_DATE = 5 * 60 * 1000;
     private double latitude;
     private double longitude;
     private double altitude;
@@ -26,12 +28,13 @@ public class LocationEntry {
     
     private LocationEntry(){}
     
-    public static LocationEntry fromJSONObject(JSONObject obj) throws JSONException {
+    public static LocationEntry fromJSONObject(JSONObject obj) throws JSONException, ParseException {
         LocationEntry le = new LocationEntry();
         le.latitude = obj.getDouble("latitude");
         le.longitude = obj.getDouble("longitude");
         le.who = obj.getString("who");
         le.displayCharacter = obj.getString("displayCharacter");
+        le.timestamp = obj.getLong("timestamp");
         return le;
     }
 
@@ -80,5 +83,9 @@ public class LocationEntry {
         obj.put("who", this.who);
         return obj;
 
+    }
+
+    public boolean isFreshDate() {
+        return this.timestamp > (new Date().getTime() - TIMEOUT_FRESH_DATE);
     }
 }
