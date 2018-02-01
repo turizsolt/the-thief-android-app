@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="Cops">
+    <item android:title="Everybody">
         <menu>
             <item
-                android:id="@+id/nav_name"
-                android:icon="@drawable/ic_menu_camera"
-                android:title="Change display name" />
-            <item
-                android:id="@+id/nav_connection"
+                android:id="@+id/nav_settings"
                 android:icon="@drawable/ic_menu_manage"
-                android:title="Edit connection" />
+                android:title="Edit settings" />
             <item
                 android:id="@+id/nav_toggle"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Toggle places" />
+                android:icon="@drawable/ic_menu_send"
+                android:title="Toggle tracking" />
         </menu>
     </item>
 
@@ -24,10 +20,6 @@
                 android:id="@+id/nav_start"
                 android:icon="@drawable/ic_menu_send"
                 android:title="Start game" />
-            <item
-                android:id="@+id/nav_update"
-                android:icon="@drawable/ic_menu_manage"
-                android:title="Update settings" />
         </menu>
     </item>
 

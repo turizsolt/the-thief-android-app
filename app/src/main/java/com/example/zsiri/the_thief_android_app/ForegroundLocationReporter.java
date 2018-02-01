@@ -83,7 +83,7 @@ public class ForegroundLocationReporter extends Service {
                                 toast.show();
                             }
 
-                            server.sendLocation(location, "G", "Gizi");
+                            server.sendLocation(location);
 
                             Log.i(LOG_TAG, "LOCATION: "+text);
                         }

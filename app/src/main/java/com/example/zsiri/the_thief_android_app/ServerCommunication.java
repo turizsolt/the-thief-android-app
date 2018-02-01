@@ -3,6 +3,7 @@ package com.example.zsiri.the_thief_android_app;
 import android.app.Activity;
 import android.location.Location;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
@@ -25,11 +26,16 @@ import java.net.URISyntaxException;
 public class ServerCommunication {
     private static final String LOG_TAG = "ServerCommunication";
     public static final int DEFAULT_CAMERA_ZOOM = 14;
+    public static final String DEFAULT_NAME = "Anonymus";
+    public static final String DEFAULT_SERVER_ADDRESS = "http://localhost:3000/";
     private static ServerCommunication __instance;
     private Activity activity;
     private GoogleMap map;
     private boolean mapPositioned;
     private Socket socket;
+
+    private String name = "";
+    private String serverAddress;
 
     public static ServerCommunication getInstance() {
         if(ServerCommunication.__instance == null){
@@ -41,29 +47,35 @@ public class ServerCommunication {
     private ServerCommunication() {
         this.mapPositioned = false;
 
-        try {
-            socket = IO.socket("http://192.168.0.192:3000/");
-            socket.on("coordinates", onCoordinates);
-            socket.connect();
-        } catch (URISyntaxException e) {
-        }
+
     }
 
     private Emitter.Listener onCoordinates = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            activity.runOnUiThread(new Runnable() {
-                public void run() {
-                    try {
-                        map.clear();
-                        JSONObject data = (JSONObject) args[0];
-                        iterateOnJsonArray(data, "cops");
-                        iterateOnJsonArray(data, "thiefs");
-                    } catch (JSONException e) {
-                        return;
-                    }
-                }
-            });
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+            try {
+                map.clear();
+                JSONObject data = (JSONObject) args[0];
+                iterateOnJsonArray(data, "cops");
+                iterateOnJsonArray(data, "thiefs");
+            } catch (JSONException e) {
+                return;
+            }
+            }
+        });
+        }
+    };
+
+    private Emitter.Listener onConnected = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(activity, "Connected to the server.", Toast.LENGTH_SHORT).show();
+            }
+        });
         }
     };
 
@@ -107,13 +119,45 @@ public class ServerCommunication {
         this.activity = activity;
     }
 
-    public void sendLocation(Location location, String displayCharacter, String who) {
+
+
+    public void sendLocation(Location location) {
         LocationEntry le = LocationEntry.fromLocation(location);
-        le.setIdentity(displayCharacter, who);
+        le.setIdentity(Character.toString(this.name.charAt(0)), this.name);
         try {
             socket.emit("check", le.toJsonObject());
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setServerAddress(String serverAddress) {
+        this.serverAddress = serverAddress;
+
+        if(socket != null && socket.connected()){
+            socket.disconnect();
+        }
+
+        try {
+            socket = IO.socket(this.serverAddress);
+            socket.on("connected", onConnected);
+            socket.on("coordinates", onCoordinates);
+            socket.connect();
+        } catch (URISyntaxException e) {
+        }
+    }
+
+    public String getName() {
+        if(name != null) return name;
+        return DEFAULT_NAME;
+    }
+
+    public String getServerAddress() {
+        if(serverAddress != null) return serverAddress;
+        return DEFAULT_SERVER_ADDRESS;
     }
 }

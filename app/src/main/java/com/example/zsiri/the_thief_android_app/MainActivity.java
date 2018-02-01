@@ -1,7 +1,9 @@
 package com.example.zsiri.the_thief_android_app;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -15,6 +17,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -23,6 +28,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
 
     private static final String LOG_TAG = "MainActivity";
+    public static final int ACTIVITY_GET_USER_SETTINGS = 1;
 
     private GoogleMap mMap;
     private ServerCommunication server;
@@ -60,6 +66,15 @@ public class MainActivity extends AppCompatActivity
 
         server = ServerCommunication.getInstance();
         server.setActivity(this);
+
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        String name = settings.getString("name", ServerCommunication.DEFAULT_NAME);
+        String serverAddress = settings.getString("serverAddress", ServerCommunication.DEFAULT_SERVER_ADDRESS);
+
+        server.setName(name);
+        server.setServerAddress(serverAddress);
+
+
     }
 
     @Override
@@ -76,6 +91,16 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        String name = settings.getString("name", ServerCommunication.DEFAULT_NAME);
+        String serverAddress = settings.getString("serverAddress", ServerCommunication.DEFAULT_SERVER_ADDRESS);
+
+        TextView textViewMenuServerAddress = (TextView) findViewById(R.id.textViewMenuServerAddress);
+        TextView textViewMenuName = (TextView) findViewById(R.id.textViewMenuName);
+        textViewMenuName.setText(name);
+        textViewMenuServerAddress.setText(serverAddress);
+
         return true;
     }
 
@@ -100,7 +125,14 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_start) {
+        if (id == R.id.nav_settings) {
+            Intent activity = new Intent(MainActivity.this, UserSettingsActivity.class);
+            activity.putExtra("name", server.getName());
+            activity.putExtra("serverAddress", server.getServerAddress());
+            startActivityForResult(activity, ACTIVITY_GET_USER_SETTINGS);
+
+
+        } else if (id == R.id.nav_toggle) {
 
             Intent service = new Intent(MainActivity.this, ForegroundLocationReporter.class);
             if (!ForegroundLocationReporter.IS_SERVICE_RUNNING) {
@@ -168,5 +200,36 @@ public class MainActivity extends AppCompatActivity
     protected void onRestart() {
         super.onRestart();
         Log.v(LOG_TAG, "onRestart");
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == ACTIVITY_GET_USER_SETTINGS) {
+            if(resultCode == Activity.RESULT_OK){
+                String name = data.getStringExtra("name");
+                String serverAddress = data.getStringExtra("serverAddress");
+                Log.v(LOG_TAG, "name: "+name);
+                Log.v(LOG_TAG, "name serverA: "+serverAddress);
+                // setting the new data on server
+                server.setName(name);
+                server.setServerAddress(serverAddress);
+
+                // setting the new data in shared preferences
+                SharedPreferences settings = getPreferences(MODE_PRIVATE);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("name", name);
+                editor.putString("serverAddress", serverAddress);
+                editor.commit();
+
+                TextView textViewMenuServerAddress = (TextView) findViewById(R.id.textViewMenuServerAddress);
+                TextView textViewMenuName = (TextView) findViewById(R.id.textViewMenuName);
+                textViewMenuName.setText(name);
+                textViewMenuServerAddress.setText(serverAddress);
+
+                Toast.makeText(this, "Settings changed successfully.", Toast.LENGTH_SHORT).show();
+
+            }
+        }
     }
 }
