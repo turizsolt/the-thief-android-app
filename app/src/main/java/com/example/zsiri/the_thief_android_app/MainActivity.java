@@ -1,6 +1,5 @@
 package com.example.zsiri.the_thief_android_app;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -22,18 +21,25 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
 
     private static final String LOG_TAG = "MainActivity";
     public static final int ACTIVITY_GET_USER_SETTINGS = 1;
+    public static final float START_LATITUDE = 47.5106309f;
+    public static final float START_LONGITUDE = 19.0563082f;
+    public static final float START_ZOOM_LEVEL = 14f;
 
     private GoogleMap mMap;
     private ServerCommunication server;
+    private CameraPosition cameraPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -228,6 +234,14 @@ public class MainActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         server.setMap(mMap);
+
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        double latitude = settings.getFloat("latitude", START_LATITUDE);
+        double longitude = settings.getFloat("longitude", START_LONGITUDE);
+        float zoom = settings.getFloat("zoom", START_ZOOM_LEVEL);
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latitude, longitude)));
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(zoom));
     }
 
     @Override
@@ -246,12 +260,35 @@ public class MainActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         Log.v(LOG_TAG, "onPause");
+
+        cameraPosition = mMap.getCameraPosition();
+
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putFloat("latitude", (float) cameraPosition.target.latitude);
+        editor.putFloat("longitude", (float) cameraPosition.target.longitude);
+        editor.putFloat("zoom", cameraPosition.zoom);
+        editor.commit();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.v(LOG_TAG, "onResume");
+
+        if(mMap != null) {
+            if(cameraPosition != null) {
+                Log.v(LOG_TAG, cameraPosition.toString());
+                Log.v(LOG_TAG, cameraPosition.target.toString());
+                Log.v(LOG_TAG, Float.toString(cameraPosition.zoom));
+
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(cameraPosition.target));
+                mMap.moveCamera(CameraUpdateFactory.zoomTo(cameraPosition.zoom));
+
+            } else {
+                Log.v(LOG_TAG, "cameraPosition is null");
+            }
+        }
     }
 
     @Override

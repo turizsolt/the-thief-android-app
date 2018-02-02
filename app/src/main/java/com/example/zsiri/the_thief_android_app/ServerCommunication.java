@@ -32,7 +32,6 @@ public class ServerCommunication {
     private static ServerCommunication __instance;
     private Activity activity;
     private GoogleMap map;
-    private boolean mapPositioned;
     private Socket socket;
 
     private String name = "";
@@ -48,8 +47,6 @@ public class ServerCommunication {
     }
 
     private ServerCommunication() {
-        this.mapPositioned = false;
-
 
     }
 
@@ -108,12 +105,6 @@ public class ServerCommunication {
                             : BitmapDescriptorFactory.HUE_BLUE)))
                     .alpha(person.isFreshDate()?1f:0.3f)
             );
-
-            if(!mapPositioned) {
-                map.moveCamera(CameraUpdateFactory.newLatLng(person.getLatLng()));
-                map.moveCamera(CameraUpdateFactory.zoomTo(DEFAULT_CAMERA_ZOOM));
-                mapPositioned = true;
-            }
         }
     }
 
